@@ -26,6 +26,7 @@ namespace Game1
 
         public Base_Background(Texture2D defaultSprite, Rectangle spritebox)
         {
+            this.defaultSprite = defaultSprite;
             this.spritebox = spritebox;
         }
 

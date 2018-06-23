@@ -24,7 +24,7 @@ namespace Game1
             isDrawn = true;
         }
 
-        public void Scroll(int aDirection, int aSpeed, GameTime gameTime)
+        public void Update(int aDirection, int aSpeed, GameTime gameTime)
         {
             if (background[0].Y < -background[0].Height)
             {

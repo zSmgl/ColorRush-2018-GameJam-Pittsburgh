@@ -1,4 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -12,10 +17,25 @@ namespace Game1
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        #region Background
+
+        ScrollingBackground bg;
+        List<Base_Background> baseBackground;
+        Rectangle backgroundSize;
+
+        #endregion Background
+        #region Player
+        Player defaultPlayer;
+        #endregion Player
+        GameManager gM;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            graphics.PreferredBackBufferWidth = 1920;
+            graphics.PreferredBackBufferHeight = 1080;
+            graphics.ApplyChanges();
         }
 
         /// <summary>
@@ -40,7 +60,36 @@ namespace Game1
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            // Debug Textures
+            #region Background
+
+            baseBackground = new List<Base_Background>();
+            backgroundSize = graphics.GraphicsDevice.Viewport.Bounds;
+            for(int i = 1; i < 6; i++)
+            {
+                baseBackground.Add(new Base_Background(Content.Load<Texture2D>("debug\\bg_" + i + ""), backgroundSize));
+            }
+
+            bg = new ScrollingBackground(baseBackground);
+
+            #endregion Background
+
+            #region Player
+
+            defaultPlayer = new Player(Content.Load<Texture2D>("debug\\player"), new Rectangle(992 - 64, 1060 - 64, 64, 64), Color.White, new CustomHitBox());
+            defaultPlayer.BindableKb.Add("left", Keys.A);
+            defaultPlayer.BindableKb.Add("right", Keys.D);
+            defaultPlayer.BindableKb.Add("up", Keys.W);
+            defaultPlayer.BindableKb.Add("down", Keys.S);
+            defaultPlayer.BindableKb.Add("shoot", Keys.Space);
+
+            #endregion Player
+
+            gM = new GameManager(bg, defaultPlayer);
+
+
+
+
         }
 
         /// <summary>
@@ -62,7 +111,7 @@ namespace Game1
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            gM.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -75,7 +124,9 @@ namespace Game1
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            gM.Draw(spriteBatch);
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
