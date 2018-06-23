@@ -59,7 +59,10 @@ namespace Game1
         }
         public override void Draw(SpriteBatch sb)
         {
-            throw new NotImplementedException();
+            foreach(Base_Background b in background)
+            {
+                b.Draw(sb);
+            }
         }
     }
 }

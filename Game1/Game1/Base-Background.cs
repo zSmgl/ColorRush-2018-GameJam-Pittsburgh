@@ -31,7 +31,7 @@ namespace Game1
 
         public void Draw(SpriteBatch sb)
         {
-            throw new NotImplementedException();
+            sb.Draw(defaultSprite, spritebox, Color.White);
         }
     }
 }
