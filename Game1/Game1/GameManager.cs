@@ -179,6 +179,11 @@ namespace Game1
             return false;
         }
 
+        public string GetInfo()
+        {
+            return player.PlayerScore.ToString();
+        }
+
         public void Draw(SpriteBatch sb)
         {
             scrollingBackground.Draw(sb);

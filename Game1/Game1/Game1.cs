@@ -11,8 +11,7 @@ enum GameState
 {
     menu,
     play,
-    gameover,
-    scores
+    gameover
 }
 
 namespace Game1
@@ -47,6 +46,9 @@ namespace Game1
         #region Menu Stuff
         private List<Texture2D> play;
         #endregion
+        #region Game Over
+        private List<Texture2D> menutext;
+        #endregion
 
         Boolean drawPrevious;
         GameState previousState;
@@ -54,6 +56,7 @@ namespace Game1
         MenuManager menu;
         UserInterface uI;
         GameManager gM;
+        GameOverManager gO;
 
         public Game1()
         {
@@ -153,6 +156,16 @@ namespace Game1
             menu = new MenuManager(play, Content.Load<Texture2D>("menu\\menubg"));
             #endregion Menu Manager
 
+            #region MenuManager
+            menutext = new List<Texture2D>();
+            for (int i = 0; i < 2; i++)
+            {
+                menutext.Add(Content.Load<Texture2D>("gO\\menu" + i + ""));
+            }
+
+            gO = new GameOverManager(play, Content.Load<Texture2D>("gO\\gOscreen"), Content.Load<SpriteFont>("spriteFont"));
+            #endregion Menu Manager
+
             gM = new GameManager(bg, defaultPlayer, Content.Load<Texture2D>("debug\\projectile"), meteorSizes, uI);
 
             gameState = GameState.menu;
@@ -183,9 +196,8 @@ namespace Game1
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             drawPrevious = false;
-
-            //GameStateMachine(gameTime);
-            gM.Update(gameTime);
+            previousState = gameState;
+            gameState = GameStateMachine(gameTime);
 
             base.Update(gameTime);
         }
@@ -210,7 +222,7 @@ namespace Game1
                         gM.Draw(spriteBatch);
                         break;
                     case GameState.gameover:
-                        scoreScreen.Draw(spriteBatch);
+                        gO.Draw(spriteBatch);
                         break;
                 }
             }
@@ -225,7 +237,7 @@ namespace Game1
                         gM.Draw(spriteBatch);
                         break;
                     case GameState.gameover:
-                        scoreScreen.Draw(spriteBatch);
+                        gO.Draw(spriteBatch);
                         break;
                 }
             }
@@ -244,7 +256,7 @@ namespace Game1
                     {
                         return GameState.menu;
                     }
-                    gM.Reset();
+                    //gM.Reset();
                     this.IsMouseVisible = false;
                     drawPrevious = true;
                     return GameState.play;
@@ -254,18 +266,24 @@ namespace Game1
                     {
                         return GameState.play;
                     }
-                    scoreScreen.AddInfo(gM.GetInfo());
+                    gO.AddInfo(gM.GetInfo());
                     drawPrevious = true;
                     return GameState.gameover;
 
                 case GameState.gameover:
-                    if (scoreScreen.Update() == GameState.gameover)
+                    this.IsMouseVisible = true;
+                    if (gO.Update() == GameState.gameover)
                     {
                         return GameState.gameover;
                     }
+                    this.IsMouseVisible = false;
                     drawPrevious = true;
                     return GameState.menu;
+
+               
             }
+
+            return GameState.gameover;
         }
     }
 }
