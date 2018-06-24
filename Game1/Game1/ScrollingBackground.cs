@@ -57,6 +57,7 @@ namespace Game1
             background[3].Y += (int)(aDirection * aSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds);
             background[4].Y += (int)(aDirection * aSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds);
         }
+
         public override void Draw(SpriteBatch sb)
         {
             foreach(Base_Background b in background)

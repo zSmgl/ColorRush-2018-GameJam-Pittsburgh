@@ -81,7 +81,7 @@ namespace Game1
         /// <param name="gameTime"></param>
         public override bool UpdateTimer(GameTime gameTime)
         {
-            timer += gameTime.ElapsedGameTime.TotalSeconds;
+            timer += gameTime.ElapsedGameTime.Milliseconds;
             if (timer >= standard)
             {
                 ResetTimer();

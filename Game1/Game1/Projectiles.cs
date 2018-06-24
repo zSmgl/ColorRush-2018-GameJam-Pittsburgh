@@ -28,6 +28,7 @@ namespace Game1
         {
             spriteBox.Y -= velocityConstant;
             RepositionHitbox();
+            ActiveorNo();
         }
 
         private void RepositionHitbox()
@@ -35,9 +36,22 @@ namespace Game1
             hitbox = new Rectangle(X + 10, Y + 4, hitbox.Width, hitbox.Height);
         }
 
+        private void ActiveorNo()
+        {
+                if (Y - Height <= -Height)
+                {
+                    isActive = false;
+                    isDrawn = false;
+                }
+            
+        }
+
         public override void Draw(SpriteBatch sb)
         {
-            sb.Draw(defaultSprite, spriteBox, color);
+            if(isDrawn)
+            {
+                sb.Draw(defaultSprite, spriteBox, color);
+            }
         }
     }
 }

@@ -24,6 +24,11 @@ namespace Game1
             get { return spritebox.Height; }
         }
 
+        public int Width
+        {
+            get { return spritebox.Width; }
+        }
+
         public Base_Background(Texture2D defaultSprite, Rectangle spritebox)
         {
             this.defaultSprite = defaultSprite;

@@ -68,6 +68,7 @@ namespace Game1
         public Vector2 ScreenBorder
         {
             set { screenBorder = value; }
+            get { return screenBorder; }
         }
 
         public List<Projectiles> ProjectilesToAdd
@@ -156,7 +157,7 @@ namespace Game1
             isActive = true;
             isDrawn = true;
             canShoot = true;
-            shootTime = new Timer(150);
+            shootTime = new Timer(300);
 
             //Movement
             bindableKb = new Dictionary<string, Keys>();
@@ -275,9 +276,26 @@ namespace Game1
 
 
 
-        public void StayOnScreen()
+        private void StayOnScreen()
         {
+            if(X < -28)
+            {
+                X = -28;
+            }
+            if(Y < -12)
+            {
+                Y = -12;
+            }
+            if(X > screenBorder.X - Width + 28)
+            {
+                X = (int)screenBorder.X - Width + 28;
+            }
+            if (Y > screenBorder.Y - Height + 12)
+            {
+                Y = (int)screenBorder.Y - Height + 12;
+            }
 
+            RepositionHitbox();
         }
 
         /// <summary>

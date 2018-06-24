@@ -27,14 +27,17 @@ namespace Game1
         #region Player
         Player defaultPlayer;
         #endregion Player
+        #region Meteor
+        List<Texture2D> meteorSizes;
+        #endregion Meteor
         GameManager gM;
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            graphics.PreferredBackBufferWidth = 900;
-            graphics.PreferredBackBufferHeight = 900;
+            graphics.PreferredBackBufferWidth = 1150;
+            graphics.PreferredBackBufferHeight = 950;
             graphics.ApplyChanges();
         }
 
@@ -65,6 +68,7 @@ namespace Game1
 
             baseBackground = new List<Base_Background>();
             backgroundSize = graphics.GraphicsDevice.Viewport.Bounds;
+            backgroundSize.Width = backgroundSize.Width - 200;
             for(int i = 1; i < 6; i++)
             {
                 baseBackground.Add(new Base_Background(Content.Load<Texture2D>("debug\\bg_" + i + ""), backgroundSize));
@@ -86,7 +90,17 @@ namespace Game1
 
             #endregion Player
 
-            gM = new GameManager(bg, defaultPlayer, Content.Load<Texture2D>("debug\\projectile"));
+            #region Meteor
+
+            meteorSizes = new List<Texture2D>();
+            for (int i = 1; i < 4; i++)
+            {
+                meteorSizes.Add(Content.Load<Texture2D>("debug\\meteor_" + i + ""));
+            }
+
+            #endregion Meteor
+
+            gM = new GameManager(bg, defaultPlayer, Content.Load<Texture2D>("debug\\projectile"), meteorSizes);
 
 
 
