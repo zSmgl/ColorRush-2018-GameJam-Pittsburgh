@@ -12,14 +12,14 @@ namespace Game1
     {
         #region Fields
 
-        private CustomHitBox hitbox;
+        private Rectangle hitbox;
         private Color color;
 
         #endregion Fields
 
         #region Properties
 
-        public CustomHitBox Hitbox
+        public Rectangle Hitbox
         {
             get { return hitbox; }
             set { hitbox = value; }
@@ -33,7 +33,7 @@ namespace Game1
 
         #endregion Properties
 
-        public Meteor(Texture2D defaultSprite, Rectangle spriteBox, Color color, CustomHitBox hitbox)
+        public Meteor(Texture2D defaultSprite, Rectangle spriteBox, Color color, Rectangle hitbox)
         {
             DefaultSprite = defaultSprite;
             Spritebox = spriteBox;

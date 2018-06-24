@@ -21,11 +21,17 @@ namespace Game1
         #region Fields
 
         // Essentials
-        private CustomHitBox hitbox;
-        private CustomHitBox previousHitbox;
+        private Rectangle hitbox;
+        private Rectangle previousHitbox;
+        private Texture2D hitSprite;
         private Rectangle previousSpritebox;
-        private Color color;
+        private Dictionary<Color, bool> activeColor;
+
+        //Proj Spawns
+
+        // Determinants
         private bool isDebugging;
+        private bool isInvincible;
 
         // Movement
         private KeyboardState kb;
@@ -34,17 +40,22 @@ namespace Game1
 
         private int verticalVelocity;
         private int horizontalVelocity;
+        private int maxSpeed;
+        private Vector2 screenBorder;
 
         private bool leftRight;
         private bool upDown;
         PlayerState playerState;
         PlayerState previousState;
 
+        //Projectiles
+        List<Projectiles> spawnProjectiles;
+
         // Collision
-        private CustomHitBox bottomChecker;
-        private CustomHitBox topChecker;
-        private CustomHitBox rightSideChecker;
-        private CustomHitBox leftSideChecker;
+        private Rectangle bottomChecker;
+        private Rectangle topChecker;
+        private Rectangle rightSideChecker;
+        private Rectangle leftSideChecker;
         private bool bottomIntersects;
         private bool topIntersects;
 
@@ -52,16 +63,20 @@ namespace Game1
 
         #region Properties
 
-        public CustomHitBox Hitbox
+        public Vector2 ScreenBorder
+        {
+            set { screenBorder = value; }
+        }
+
+        public List<Projectiles> ProjectilesToAdd
+        {
+            get { return spawnProjectiles; }
+        }
+
+        public Rectangle Hitbox
         {
            get { return hitbox; }
            set { hitbox = value; }
-        }
-
-        public Color Color
-        {
-            get { return color; }
-            set { color = value; }
         }
 
         public Dictionary<string, Keys> BindableKb
@@ -88,16 +103,53 @@ namespace Game1
             set { playerState = value; }
         }
 
+        public bool IsDebugging
+        {
+            get { return isDebugging; }
+        }
+
+        public Vector2 SpawnA
+        {
+            get { return new Vector2(hitbox.X + 5, Y); }
+        }
+        private Vector2 SpawnO
+        {
+            get { return new Vector2(hitbox.X + 16, Y); }
+        }
+        private Vector2 SpawnZ
+        {
+            get { return new Vector2(hitbox.X + 26, Y); }
+        }
+        private Vector2 Spawn1
+        {
+            get { return new Vector2(hitbox.X + 11, Y); }
+        }
+        private Vector2 Spawn2
+        {
+            get { return new Vector2(hitbox.X + 21, Y); }
+        }
+
         #endregion Properties
 
         #region Constructor
 
-        public Player(Texture2D defaultSprite, Rectangle spriteBox, Color color, CustomHitBox hitbox)
+        public Player(Texture2D defaultSprite, Texture2D hitSprite, Rectangle spriteBox, Rectangle hitbox)
         {
             DefaultSprite = defaultSprite;
             Spritebox = spriteBox;
+            this.hitSprite = hitSprite;
             this.hitbox = hitbox;
-            this.color = color;
+            spawnProjectiles = new List<Projectiles>();
+
+            // Color Add
+            activeColor = new Dictionary<Color, bool>();
+            activeColor.Add(Color.White, false);
+            activeColor.Add(Color.Red, true);
+            activeColor.Add(Color.Blue, true);
+            activeColor.Add(Color.Yellow, false);
+            activeColor.Add(Color.Black, false);
+
+            RepositionHitbox();
 
             isActive = true;
             isDrawn = true;
@@ -107,6 +159,7 @@ namespace Game1
             verticalVelocity = 0;
             horizontalVelocity = 0;
             playerState = PlayerState.alive;
+            maxSpeed = 7;
 
             //Collisions
             isDebugging = false;
@@ -129,13 +182,13 @@ namespace Game1
             if ((kb.IsKeyDown(bindableKb["left"])))
             {
                 leftRight = true;
-                Accelerate(horizontalVelocity, 5, 10, false);
+                horizontalVelocity -= 5;
             }
 
             if ((kb.IsKeyDown(bindableKb["right"])))
             {
                 leftRight = true;
-                Accelerate(horizontalVelocity, 5, 10, false);
+                horizontalVelocity += 5;
             }
 
             if ((kb.IsKeyDown(bindableKb["left"])) && (kb.IsKeyDown(bindableKb["right"])))
@@ -147,13 +200,13 @@ namespace Game1
             if ((kb.IsKeyDown(bindableKb["up"])))
             {
                 upDown = true;
-                Accelerate(verticalVelocity, 5, 10, true);
+                verticalVelocity -= 5;
             }
 
             if ((kb.IsKeyDown(bindableKb["down"])))
             {
                 upDown = true;
-                Accelerate(verticalVelocity, 5, 10, true);
+                verticalVelocity += 5;
             }
 
             if ((kb.IsKeyDown(bindableKb["down"])) && (kb.IsKeyDown(bindableKb["up"])))
@@ -164,121 +217,33 @@ namespace Game1
 
             if (!leftRight)
             {
-                Decelerate(horizontalVelocity, 1, 0, false);
+                if(horizontalVelocity < 0)
+                {
+                    horizontalVelocity++;
+                }
+                else if (horizontalVelocity > 0)
+                {
+                    horizontalVelocity--;
+                }
             }
 
             if (!upDown)
             {
-                Decelerate(horizontalVelocity, 1, 0, false);
+                if (verticalVelocity < 0)
+                {
+                    verticalVelocity++;
+                }
+                else if (verticalVelocity > 0)
+                {
+                    verticalVelocity--;
+                }
             }
 
+            CheckSpeed();
             X += horizontalVelocity;
             Y += verticalVelocity;
+            RepositionHitbox();
         }
-
-        #region Acceleration
-
-        /// <summary>
-        /// slowdown the object by the rate until the limit velocity is reached 
-        /// </summary>
-        /// <param name="velocityType"></param>
-        /// <param name="rate"></param>
-        public void Decelerate(int velocityType, int rate, int limit, bool vertical)
-        {
-            if (vertical)
-            {
-                if (verticalVelocity > 0)
-                {
-                    if (velocityType > limit)
-                    {
-                        velocityType -= rate;
-                    }
-                }
-                else if (verticalVelocity < 0)
-                {
-                    if (velocityType > limit)
-                    {
-                        velocityType += rate;
-                    }
-                }
-            }
-            else
-            {
-                if (horizontalVelocity > 0)
-                {
-                    if (velocityType > limit)
-                    {
-                        velocityType -= rate;
-                    }
-                }
-                else if (horizontalVelocity < 0)
-                {
-                    if (velocityType > limit)
-                    {
-                        velocityType += rate;
-                    }
-                }
-            }
-
-            if (vertical)
-            {
-                verticalVelocity = velocityType;
-            }
-            else
-            {
-                horizontalVelocity = velocityType;
-            }
-        }
-
-        /// <summary>
-        /// speed up the object by the rate until the limit velocity is reached
-        /// </summary>
-        /// <param name="velocityType"></param>
-        /// <param name="rate"></param>
-        /// <param name="limit"></param>
-        public void Accelerate(int velocityType, int rate, int limit, bool vertical)
-        {
-            if(vertical) 
-            {
-                if (verticalVelocity > 0)
-                {
-                    if (velocityType < limit)
-                    {
-                        velocityType += rate;
-                    }
-                }
-                else 
-                {
-                    limit -= limit * 2;
-                    if (velocityType > limit)
-                    {
-                        velocityType -= rate;
-                    }
-                }
-                verticalVelocity = velocityType;
-            }
-            else 
-            {
-                if (horizontalVelocity > 0)
-                {
-                    if (velocityType < limit)
-                    {
-                        velocityType += rate;
-                    }
-                }
-                else 
-                {
-                    limit -= limit * 2;
-                    if (velocityType > limit)
-                    {
-                        velocityType -= rate;
-                    }
-                }
-                horizontalVelocity = velocityType;
-            }
-        }
-
-        #endregion Acceleration
 
         #endregion Movement
 
@@ -304,9 +269,41 @@ namespace Game1
             }
         }
 
+
+
         public void StayOnScreen()
         {
 
+        }
+
+        /// <summary>
+        /// Keeps speed in check
+        /// </summary>
+        /// 
+        private void CheckSpeed()
+        {
+            //if velocity has gone out of bounds of max speed, set it such that it is at its max
+            if (horizontalVelocity > maxSpeed)
+            {
+                horizontalVelocity = maxSpeed;
+            }
+            if (verticalVelocity > maxSpeed)
+            {
+                verticalVelocity = maxSpeed;
+            }
+            if (horizontalVelocity < maxSpeed * -1)
+            {
+                horizontalVelocity = maxSpeed * -1;
+            }
+            if (verticalVelocity < maxSpeed * -1)
+            {
+                verticalVelocity = maxSpeed * -1;
+            }
+        }
+
+        private void RepositionHitbox()
+        {
+            hitbox = new Rectangle(X - 14, Y - 6, hitbox.Width, hitbox.Height);
         }
 
         public void Update(GameTime gameTime)
@@ -314,6 +311,8 @@ namespace Game1
             previousState = Playerstate;
             previousHitbox = Hitbox;
             previousSpritebox = Spritebox;
+            upDown = false;
+            leftRight = false;
 
             previousKb = kb;
             kb = Keyboard.GetState();
@@ -330,45 +329,105 @@ namespace Game1
             if (horizontalVelocity > 0)
             {
                 //X is right of player, Y is the same as player, width depends on horizontalVelocity, height is same as player
-                rightSideChecker = hitbox.RightSide(Math.Abs(horizontalVelocity));
-                leftSideChecker = hitbox.LeftSide(5);
+                rightSideChecker = new Rectangle(X + hitbox.Width, Y + 10, Math.Abs(horizontalVelocity), hitbox.Height - 20);
+                leftSideChecker = new Rectangle(X, Y + 10, 5, hitbox.Height - 20);
             }
             // Going left
             else if (horizontalVelocity < 0)
             {
-                leftSideChecker = hitbox.LeftSide(Math.Abs(horizontalVelocity));
-                rightSideChecker = hitbox.RightSide(-5);
+                leftSideChecker = new Rectangle(X - Math.Abs(horizontalVelocity), Y + 10, Math.Abs(horizontalVelocity), hitbox.Height - 20);
+                rightSideChecker = new Rectangle(X + hitbox.Width - 5, Y + 10, 5, hitbox.Height - 20);
             }
             // Stationary
             else
             {
-                leftSideChecker = hitbox.LeftSide(5);
-                rightSideChecker = hitbox.Right(-5);
+                leftSideChecker = new Rectangle(X, Y + 10, 5, hitbox.Height - 20);
+                rightSideChecker = new Rectangle(X + hitbox.Width - 5, Y + 10, 5, hitbox.Height - 20);
             }
 
             // Going Up
             if (verticalVelocity < 0)
             {
                 //X is right of player, Y is the same as player, width depends on horizontalVelocity, height is same as player
-                topChecker = hitbox.TopSide(Math.Abs(verticalVelocity));
-                bottomChecker = hitbox.BotSide(-5);
+                topChecker = new Rectangle(X + 10, Y - Math.Abs(verticalVelocity), hitbox.Width - 20, Math.Abs(verticalVelocity));
+                bottomChecker = new Rectangle(X + 10, Y + hitbox.Height -5, hitbox.Width - 20, 5);
             }
-            // Going Left
+            // Going Down
             else if (verticalVelocity > 0)
             {
-                bottomChecker = hitbox.TopSide(Math.Abs(verticalVelocity));
-                topChecker = hitbox.BotSide(5);
+                bottomChecker = new Rectangle(X + 10, Y + hitbox.Height, hitbox.Width - 20, Math.Abs(verticalVelocity));
+                topChecker = new Rectangle(X + 10, Y, hitbox.Width - 20, 5);
             }
             else
             {
-                topChecker = hitbox.GoingRight(5);
-                bottomChecker = hitbox.GoingLeft(-5);
+                topChecker = new Rectangle(X + 10, Y, hitbox.Width - 20, 5);
+                bottomChecker = new Rectangle(X + 10, Y + hitbox.Height - 5, hitbox.Width - 20, 5);
             }
 
 
             #endregion
 
             Movement();
+            StayOnScreen();
+        }
+
+        public bool FireProjectile()
+        {
+            spawnProjectiles.Clear();
+
+            // Set Texture int in here
+
+            if (activeColor[Color.White] == true)
+            {
+                return false;
+            }
+
+            else if (activeColor[Color.Black] == true)
+            {
+                spawnProjectiles.Add(new Projectiles(SpawnA, Color.Black));
+                spawnProjectiles.Add(new Projectiles(SpawnO, Color.Black));
+                spawnProjectiles.Add(new Projectiles(SpawnZ, Color.Black));
+            }
+            else if (activeColor[Color.Blue] && activeColor[Color.Yellow] && activeColor[Color.Red])
+            {
+                spawnProjectiles.Add(new Projectiles(SpawnA, Color.Blue));
+                spawnProjectiles.Add(new Projectiles(SpawnO, Color.Yellow));
+                spawnProjectiles.Add(new Projectiles(SpawnZ, Color.Red));
+            }
+            else if (activeColor[Color.Blue] && activeColor[Color.Yellow])
+            {
+                spawnProjectiles.Add(new Projectiles(Spawn1, Color.Blue));
+                spawnProjectiles.Add(new Projectiles(Spawn2, Color.Yellow));
+            }
+            else if (activeColor[Color.Blue] && activeColor[Color.Red])
+            {
+                spawnProjectiles.Add(new Projectiles(Spawn1, Color.Blue));
+                spawnProjectiles.Add(new Projectiles(Spawn2, Color.Red));
+            }
+            else if (activeColor[Color.Yellow] && activeColor[Color.Red])
+            {
+                spawnProjectiles.Add(new Projectiles(Spawn1, Color.Yellow));
+                spawnProjectiles.Add(new Projectiles(Spawn2, Color.Red));
+            }
+            else if (activeColor[Color.Yellow])
+            {
+                spawnProjectiles.Add(new Projectiles(SpawnO, Color.Yellow));
+            }
+            else if (activeColor[Color.Blue])
+            {
+                spawnProjectiles.Add(new Projectiles(SpawnO, Color.Blue));
+            }
+            else
+            {
+                spawnProjectiles.Add(new Projectiles(SpawnO, Color.Red));
+            }
+
+            if ((kb.IsKeyDown(bindableKb["shoot"])))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public void CheckColliderAgainstEnemy(Meteor m)
@@ -377,7 +436,8 @@ namespace Game1
 
         public override void Draw(SpriteBatch sb)
         {
-            sb.Draw(defaultSprite, spriteBox, Color.Red);
+            sb.Draw(defaultSprite, spriteBox, Color.White);
+            sb.Draw(hitSprite, hitbox, Color.Red);
         }
 
     }

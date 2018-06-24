@@ -12,20 +12,47 @@ namespace Game1
     {
         private ScrollingBackground scrollingBackground;
         private Player player;
+        private List<Projectiles> projectiles;
+        private Texture2D projectileSprite;
 
         //Controlled Values
         private int scrollSpeed;
 
-        public GameManager(ScrollingBackground scrollingBackground, Player player)
+        public GameManager(ScrollingBackground scrollingBackground, Player player, Texture2D projectileSprite)
         {
             this.scrollingBackground = scrollingBackground;
             scrollSpeed = 160;
 
             this.player = player;
+
+            projectiles = new List<Projectiles>();
+            this.projectileSprite = projectileSprite;
         }
 
         public void Update(GameTime gameTime)
         {
+            player.Update(gameTime);
+
+            // Adds Proj to list if needed
+
+            if (projectiles != null)
+            {
+                foreach (Projectiles p in projectiles)
+                {
+                    p.Update();
+                }
+            }
+
+            if (player.FireProjectile())
+            {
+                foreach (Projectiles p in player.ProjectilesToAdd)
+                {
+                    Projectiles tempProj = p;
+                    tempProj.DefaultSprite = projectileSprite;
+                    projectiles.Add(tempProj);
+                }
+            }
+
             scrollingBackground.Update(-1, scrollSpeed, gameTime);
         }
 
@@ -33,6 +60,17 @@ namespace Game1
         {
             scrollingBackground.Draw(sb);
             player.Draw(sb);
+
+            if (projectiles != null)
+            {
+                foreach (Projectiles p in projectiles)
+                {
+                    p.Draw(sb);
+                }
+            }
+
         }
+
+
     }
 }

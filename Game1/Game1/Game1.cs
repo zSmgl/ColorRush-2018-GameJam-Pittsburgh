@@ -76,7 +76,8 @@ namespace Game1
 
             #region Player
 
-            defaultPlayer = new Player(Content.Load<Texture2D>("debug\\player"), new Rectangle(992 - 64, 1060 - 64, 64, 64), Color.White, new CustomHitBox());
+            defaultPlayer = new Player(Content.Load<Texture2D>("debug\\player"), Content.Load<Texture2D>("debug\\hitbox"),
+                new Rectangle(992 - 64, 1060 - 64, 64, 64), new Rectangle(0, 0, 36, 52));
             defaultPlayer.BindableKb.Add("left", Keys.A);
             defaultPlayer.BindableKb.Add("right", Keys.D);
             defaultPlayer.BindableKb.Add("up", Keys.W);
@@ -85,7 +86,7 @@ namespace Game1
 
             #endregion Player
 
-            gM = new GameManager(bg, defaultPlayer);
+            gM = new GameManager(bg, defaultPlayer, Content.Load<Texture2D>("debug\\projectile"));
 
 
 
