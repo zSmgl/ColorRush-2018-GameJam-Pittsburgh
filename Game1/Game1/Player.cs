@@ -32,6 +32,8 @@ namespace Game1
         // Determinants
         private bool isDebugging;
         private bool isInvincible;
+        private bool canShoot;
+        Timer shootTime;
 
         // Movement
         private KeyboardState kb;
@@ -110,23 +112,23 @@ namespace Game1
 
         public Vector2 SpawnA
         {
-            get { return new Vector2(hitbox.X + 5, Y); }
+            get { return new Vector2(hitbox.X + 10, Y); }
         }
         private Vector2 SpawnO
         {
-            get { return new Vector2(hitbox.X + 16, Y); }
+            get { return new Vector2(hitbox.X + 32, Y); }
         }
         private Vector2 SpawnZ
         {
-            get { return new Vector2(hitbox.X + 26, Y); }
+            get { return new Vector2(hitbox.X + 52, Y); }
         }
         private Vector2 Spawn1
         {
-            get { return new Vector2(hitbox.X + 11, Y); }
+            get { return new Vector2(hitbox.X + 22, Y); }
         }
         private Vector2 Spawn2
         {
-            get { return new Vector2(hitbox.X + 21, Y); }
+            get { return new Vector2(hitbox.X + 42, Y); }
         }
 
         #endregion Properties
@@ -153,6 +155,8 @@ namespace Game1
 
             isActive = true;
             isDrawn = true;
+            canShoot = true;
+            shootTime = new Timer(150);
 
             //Movement
             bindableKb = new Dictionary<string, Keys>();
@@ -303,7 +307,7 @@ namespace Game1
 
         private void RepositionHitbox()
         {
-            hitbox = new Rectangle(X - 14, Y - 6, hitbox.Width, hitbox.Height);
+            hitbox = new Rectangle(X + 28, Y + 12, hitbox.Width, hitbox.Height);
         }
 
         public void Update(GameTime gameTime)
@@ -369,6 +373,12 @@ namespace Game1
 
             Movement();
             StayOnScreen();
+
+            if(canShoot == false)
+            {
+                canShoot = shootTime.UpdateTimer(gameTime);
+            }
+            
         }
 
         public bool FireProjectile()
@@ -422,8 +432,9 @@ namespace Game1
                 spawnProjectiles.Add(new Projectiles(SpawnO, Color.Red));
             }
 
-            if ((kb.IsKeyDown(bindableKb["shoot"])))
+            if ((kb.IsKeyDown(bindableKb["shoot"])) && canShoot)
             {
+                canShoot = false;
                 return true;
             }
 
@@ -437,7 +448,6 @@ namespace Game1
         public override void Draw(SpriteBatch sb)
         {
             sb.Draw(defaultSprite, spriteBox, Color.White);
-            sb.Draw(hitSprite, hitbox, Color.Red);
         }
 
     }

@@ -33,8 +33,8 @@ namespace Game1
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            graphics.PreferredBackBufferWidth = 1920;
-            graphics.PreferredBackBufferHeight = 1080;
+            graphics.PreferredBackBufferWidth = 900;
+            graphics.PreferredBackBufferHeight = 900;
             graphics.ApplyChanges();
         }
 
@@ -77,7 +77,7 @@ namespace Game1
             #region Player
 
             defaultPlayer = new Player(Content.Load<Texture2D>("debug\\player"), Content.Load<Texture2D>("debug\\hitbox"),
-                new Rectangle(992 - 64, 1060 - 64, 64, 64), new Rectangle(0, 0, 36, 52));
+                new Rectangle(628 - 128, 800 - 128, 128, 128), new Rectangle(0, 0, 72, 104));
             defaultPlayer.BindableKb.Add("left", Keys.A);
             defaultPlayer.BindableKb.Add("right", Keys.D);
             defaultPlayer.BindableKb.Add("up", Keys.W);

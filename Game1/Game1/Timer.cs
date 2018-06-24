@@ -57,7 +57,7 @@ namespace Game1
         /// <param name="gameTime"></param>
         public virtual bool UpdateTimer(GameTime gameTime)
         {
-            timer += gameTime.ElapsedGameTime.TotalSeconds;
+            timer += gameTime.ElapsedGameTime.TotalMilliseconds;
             if (timer > standard)
             {
                 ResetTimer();

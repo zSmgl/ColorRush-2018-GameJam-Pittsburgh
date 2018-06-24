@@ -16,8 +16,8 @@ namespace Game1
 
         public Projectiles(Vector2 spawnCord, Color color)
         {
-            hitbox = new Rectangle((int)spawnCord.X, (int)spawnCord.Y, 4, 8);
-            spriteBox = new Rectangle(hitbox.X + 7, hitbox.Y - 5, 16, 16);
+            hitbox = new Rectangle((int)spawnCord.X, (int)spawnCord.Y, 12, 26);
+            spriteBox = new Rectangle(hitbox.X - 10, hitbox.Y - 4, 32, 32);
             this.color = color;
             isActive = true;
             isDrawn = true;
@@ -32,7 +32,7 @@ namespace Game1
 
         private void RepositionHitbox()
         {
-            hitbox = new Rectangle(X - 7, Y - 5, hitbox.Width, hitbox.Height);
+            hitbox = new Rectangle(X + 10, Y + 4, hitbox.Width, hitbox.Height);
         }
 
         public override void Draw(SpriteBatch sb)
