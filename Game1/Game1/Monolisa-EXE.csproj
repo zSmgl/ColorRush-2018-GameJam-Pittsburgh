@@ -45,6 +45,8 @@
     <Compile Include="Game1.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="GameObject.cs" />
+    <Compile Include="GameOverManager.cs" />
+    <Compile Include="MenuManager.cs" />
     <Compile Include="Meteor.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="PowerUps.cs" />
