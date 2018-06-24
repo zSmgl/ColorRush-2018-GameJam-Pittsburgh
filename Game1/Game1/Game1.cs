@@ -40,14 +40,18 @@ namespace Game1
         List<Texture2D> meteorSizes;
         #endregion Meteor
         #region UI
-        private SpriteFont uiFont;
         private List<Texture2D> primaryColor;
         private List<Texture2D> complementColor;
         private List<Texture2D> whiteLine;
         #endregion UI
+        #region Menu Stuff
+        private List<Texture2D> play;
+        #endregion
+
         Boolean drawPrevious;
         GameState previousState;
         GameState gameState;
+        MenuManager menu;
         UserInterface uI;
         GameManager gM;
 
@@ -139,6 +143,16 @@ namespace Game1
                 primaryColor, complementColor, whiteLine, Content.Load<Texture2D>("ui\\blackBG"));
             #endregion UI
 
+            #region MenuManager
+            play = new List<Texture2D>();
+            for (int i = 0; i < 2; i++)
+            {
+                play.Add(Content.Load<Texture2D>("menu\\play" + i + ""));
+            }
+
+            menu = new MenuManager(play, Content.Load<Texture2D>("menu\\menubg"));
+            #endregion Menu Manager
+
             gM = new GameManager(bg, defaultPlayer, Content.Load<Texture2D>("debug\\projectile"), meteorSizes, uI);
 
             gameState = GameState.menu;
@@ -225,11 +239,13 @@ namespace Game1
             switch (gameState)
             {
                 case GameState.menu:
+                    this.IsMouseVisible = true;
                     if (menu.Update() == GameState.menu)
                     {
                         return GameState.menu;
                     }
                     gM.Reset();
+                    this.IsMouseVisible = false;
                     drawPrevious = true;
                     return GameState.play;
 
