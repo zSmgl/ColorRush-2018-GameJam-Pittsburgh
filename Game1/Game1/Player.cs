@@ -26,14 +26,25 @@ namespace Game1
         private Texture2D hitSprite;
         private Rectangle previousSpritebox;
         private Dictionary<Color, bool> activeColor;
+        private Vector2 ssCords;
 
-        //Proj Spawns
+        // Score
+        private double playerScore;
+        private double previousScore;  // Used to figure out if the multiplier should Increment
+        private int multiplier;     // Multiplier for Score
+        private int streak;         // Keeps track of shot in a row.
+        private Timer streakBeGone; // Time between gaining points where you could lose points
 
         // Determinants
         private bool isDebugging;
         private bool isInvincible;
         private bool canShoot;
-        Timer shootTime;
+        private bool isReloading;
+        private int shotCount;
+        private Timer shootTime;
+        private Timer reloadingTime;
+        private Timer invincibleTime;
+
 
         // Movement
         private KeyboardState kb;
@@ -53,14 +64,6 @@ namespace Game1
         //Projectiles
         List<Projectiles> spawnProjectiles;
 
-        // Collision
-        private Rectangle bottomChecker;
-        private Rectangle topChecker;
-        private Rectangle rightSideChecker;
-        private Rectangle leftSideChecker;
-        private bool bottomIntersects;
-        private bool topIntersects;
-
         #endregion Fields
 
         #region Properties
@@ -69,6 +72,37 @@ namespace Game1
         {
             set { screenBorder = value; }
             get { return screenBorder; }
+        }
+
+        public bool IsReloading
+        {
+            get { return isReloading; }
+        }
+
+        public bool IsInvincible
+        {
+            get { return isInvincible; }
+        }
+
+        public int Streak
+        {
+            get { return streak; }
+        }
+
+        public double PlayerScore
+        {
+            set { playerScore = value; }
+            get { return playerScore; }
+        }
+
+        public int ShotCount
+        {
+            get { return shotCount; }
+        }
+
+        public int Multiplier
+        {
+            get { return multiplier; }
         }
 
         public List<Projectiles> ProjectilesToAdd
@@ -148,16 +182,32 @@ namespace Game1
             activeColor = new Dictionary<Color, bool>();
             activeColor.Add(Color.White, false);
             activeColor.Add(Color.Red, true);
-            activeColor.Add(Color.Blue, true);
-            activeColor.Add(Color.Yellow, true);
+            activeColor.Add(Color.Blue, false);
+            activeColor.Add(Color.Yellow, false);
             activeColor.Add(Color.Black, false);
+
+            ssCords = new Vector2(2, 1);
 
             RepositionHitbox();
 
             isActive = true;
             isDrawn = true;
+
+            // MilliSeconds
+            shootTime = new Timer(250);         
+            invincibleTime = new Timer(10000);
+            reloadingTime = new Timer(2000);
+            streakBeGone = new Timer(5000);
+
             canShoot = true;
-            shootTime = new Timer(360);
+            isReloading = false;
+            isInvincible = false;
+
+            shotCount = 50;
+            streak = 0;
+            playerScore = 0;
+            previousScore = 0;
+            multiplier = 1;
 
             //Movement
             bindableKb = new Dictionary<string, Keys>();
@@ -168,8 +218,6 @@ namespace Game1
 
             //Collisions
             isDebugging = false;
-            bottomIntersects = false;
-            topIntersects = false;
 
             leftRight = false;
             upDown = false;
@@ -330,6 +378,26 @@ namespace Game1
 
         public void Update(GameTime gameTime)
         {
+            if(previousScore != playerScore)
+            {
+                streak++;
+                streakBeGone.ResetTimer();
+                previousScore = playerScore;
+            }
+            else
+            {
+                if (streakBeGone.UpdateTimer(gameTime) == true)
+                {
+                    streak = 0;
+                    isInvincible = false;
+                    activeColor[Color.Black] = false;
+                    activeColor[Color.White] = false;
+                    activeColor[Color.Yellow] = false;
+                    activeColor[Color.Blue] = false;
+                    activeColor[Color.Red] = true;
+                }
+            }
+
             previousState = Playerstate;
             previousHitbox = Hitbox;
             previousSpritebox = Spritebox;
@@ -339,6 +407,35 @@ namespace Game1
             previousKb = kb;
             kb = Keyboard.GetState();
 
+            //Scoring
+            if (streak >= 50)
+            {
+                multiplier = 16;
+                if(streak % 100 == 0)
+                {
+                    isInvincible = true;
+                    activeColor[Color.Black] = true;
+                }
+            }
+            else if (streak > 30)
+            {
+                multiplier = 8;
+            }
+            else if (streak > 20)
+            {
+                multiplier = 4;
+                activeColor[Color.Yellow] = true;
+            }
+            else if (streak > 10)
+            {
+                multiplier = 2;
+                activeColor[Color.Blue] = true;
+            }
+            else
+            {
+                multiplier = 1;
+            }
+
             //Debugging code
             if (SingleKeyPress(Keys.F8))
             {
@@ -346,53 +443,36 @@ namespace Game1
                 isDebugging = !isDebugging;
             }
 
-            #region COLLISIONBOXES
-            // Going right
-            if (horizontalVelocity > 0)
+            if (isInvincible)
             {
-                //X is right of player, Y is the same as player, width depends on horizontalVelocity, height is same as player
-                rightSideChecker = new Rectangle(X + hitbox.Width, Y + 10, Math.Abs(horizontalVelocity), hitbox.Height - 20);
-                leftSideChecker = new Rectangle(X, Y + 10, 5, hitbox.Height - 20);
+                    if (invincibleTime.UpdateTimer(gameTime) == true)
+                    {
+                    isInvincible = false;
+                    activeColor[Color.Black] = false;
+                    isReloading = true;
+                    }
             }
-            // Going left
-            else if (horizontalVelocity < 0)
-            {
-                leftSideChecker = new Rectangle(X - Math.Abs(horizontalVelocity), Y + 10, Math.Abs(horizontalVelocity), hitbox.Height - 20);
-                rightSideChecker = new Rectangle(X + hitbox.Width - 5, Y + 10, 5, hitbox.Height - 20);
-            }
-            // Stationary
-            else
-            {
-                leftSideChecker = new Rectangle(X, Y + 10, 5, hitbox.Height - 20);
-                rightSideChecker = new Rectangle(X + hitbox.Width - 5, Y + 10, 5, hitbox.Height - 20);
-            }
-
-            // Going Up
-            if (verticalVelocity < 0)
-            {
-                //X is right of player, Y is the same as player, width depends on horizontalVelocity, height is same as player
-                topChecker = new Rectangle(X + 10, Y - Math.Abs(verticalVelocity), hitbox.Width - 20, Math.Abs(verticalVelocity));
-                bottomChecker = new Rectangle(X + 10, Y + hitbox.Height -5, hitbox.Width - 20, 5);
-            }
-            // Going Down
-            else if (verticalVelocity > 0)
-            {
-                bottomChecker = new Rectangle(X + 10, Y + hitbox.Height, hitbox.Width - 20, Math.Abs(verticalVelocity));
-                topChecker = new Rectangle(X + 10, Y, hitbox.Width - 20, 5);
-            }
-            else
-            {
-                topChecker = new Rectangle(X + 10, Y, hitbox.Width - 20, 5);
-                bottomChecker = new Rectangle(X + 10, Y + hitbox.Height - 5, hitbox.Width - 20, 5);
-            }
-
-
-            #endregion
 
             Movement();
             StayOnScreen();
 
-            if(canShoot == false)
+            if (shotCount == 0)
+            {
+                shotCount = 50;
+                isReloading = true;
+                activeColor[Color.White] = true;
+            }
+
+            if (isReloading)
+            {
+                if(reloadingTime.UpdateTimer(gameTime) == true)
+                {
+                    isReloading = false;
+                    activeColor[Color.White] = false;
+                }
+            }
+
+            if (canShoot == false)
             {
                 canShoot = shootTime.UpdateTimer(gameTime);
             }
@@ -407,6 +487,7 @@ namespace Game1
 
             if (activeColor[Color.White] == true)
             {
+                ssCords = new Vector2(0, 0);
                 return false;
             }
 
@@ -415,44 +496,53 @@ namespace Game1
                 spawnProjectiles.Add(new Projectiles(SpawnA, Color.Black));
                 spawnProjectiles.Add(new Projectiles(SpawnO, Color.Black));
                 spawnProjectiles.Add(new Projectiles(SpawnZ, Color.Black));
+                ssCords = new Vector2(1, 0);
             }
             else if (activeColor[Color.Blue] && activeColor[Color.Yellow] && activeColor[Color.Red])
             {
                 spawnProjectiles.Add(new Projectiles(SpawnA, Color.Blue));
                 spawnProjectiles.Add(new Projectiles(SpawnO, Color.Yellow));
                 spawnProjectiles.Add(new Projectiles(SpawnZ, Color.Red));
+                ssCords = new Vector2(2, 0);
             }
             else if (activeColor[Color.Blue] && activeColor[Color.Yellow])
             {
                 spawnProjectiles.Add(new Projectiles(Spawn1, Color.Blue));
                 spawnProjectiles.Add(new Projectiles(Spawn2, Color.Yellow));
+                ssCords = new Vector2(1, 2);
             }
             else if (activeColor[Color.Blue] && activeColor[Color.Red])
             {
                 spawnProjectiles.Add(new Projectiles(Spawn1, Color.Blue));
                 spawnProjectiles.Add(new Projectiles(Spawn2, Color.Red));
+                ssCords = new Vector2(0, 2);
             }
             else if (activeColor[Color.Yellow] && activeColor[Color.Red])
             {
                 spawnProjectiles.Add(new Projectiles(Spawn1, Color.Yellow));
                 spawnProjectiles.Add(new Projectiles(Spawn2, Color.Red));
+                ssCords = new Vector2(2, 2);
             }
             else if (activeColor[Color.Yellow])
             {
                 spawnProjectiles.Add(new Projectiles(SpawnO, Color.Yellow));
+                ssCords = new Vector2(1, 1);
             }
             else if (activeColor[Color.Blue])
             {
                 spawnProjectiles.Add(new Projectiles(SpawnO, Color.Blue));
+                ssCords = new Vector2(0, 1);
             }
             else
             {
                 spawnProjectiles.Add(new Projectiles(SpawnO, Color.Red));
+                ssCords = new Vector2(2, 1);
             }
 
-            if ((kb.IsKeyDown(bindableKb["shoot"])) && canShoot)
+            if ((kb.IsKeyDown(bindableKb["shoot"])) && canShoot && !isReloading)
             {
                 canShoot = false;
+                shotCount--;
                 return true;
             }
 
@@ -463,7 +553,16 @@ namespace Game1
         {
             if (isDrawn)
             {
-                sb.Draw(defaultSprite, spriteBox, Color.White);
+                if (isInvincible)
+                {
+                    sb.Draw(defaultSprite, new Vector2(X, Y),
+                        new Rectangle((int)ssCords.X * 128, (int)ssCords.Y * 128, Width, Height), Color.Black);
+                }
+                else
+                {
+                    sb.Draw(defaultSprite, new Vector2(X, Y),
+                        new Rectangle((int)ssCords.X * 128, (int)ssCords.Y * 128, Width, Height), Color.White);
+                }
             }
         }
 

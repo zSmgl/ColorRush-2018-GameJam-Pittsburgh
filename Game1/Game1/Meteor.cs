@@ -22,6 +22,7 @@ namespace Game1
         private Size size;
         private int fallSpeed;
         private int border;
+        private int pointValue;
 
         #endregion Fields
 
@@ -31,6 +32,11 @@ namespace Game1
         {
             get { return color; }
             set { color = value; }
+        }
+
+        public int PointVaue
+        {
+            get { return pointValue; }
         }
 
         public Size Size
@@ -45,59 +51,66 @@ namespace Game1
 
         public Meteor(Random rng, int range, int border)
         {
+            pointValue = 0;
             int sizeDet = rng.Next(0, 11);
             Vector2 hW;
-            // 20% Small
-            if (sizeDet <= 2)
+            // 40% Small
+            if (sizeDet <= 4)
             {
                 hW = new Vector2(32, 32);
                 size = Size.Small;
+                pointValue += 15;
                 
             }
             // 50% Medium
-            else if (sizeDet <= 7)
+            else if (sizeDet <= 9)
             {
                 hW = new Vector2(64, 64);
                 size = Size.Medium;
+                pointValue += 9;
             }
-            // 30% Large
+            // 10% Large
             else
             {
                 hW = new Vector2(128, 128);
                 size = Size.Large;
+                pointValue += 6;
             }
 
             int xPos = rng.Next((int)hW.X, range - (int)hW.X);
 
             // Color Stuff
 
-            int colorDet = rng.Next(1, 4);
-            if (colorDet == 1)
+            int colorDet = rng.Next(1, 10);
+            if (colorDet <= 3)
             {
-                color = Color.Purple;
+                color = Color.Fuchsia;
             }
-            else if(colorDet == 2)
+            else if(colorDet <= 6)
             {
                 color = Color.Orange;
             }
             else
             {
-                color = Color.Green;
+                color = Color.LawnGreen;
             }
 
             int fallDet = rng.Next(1, 4);
 
             if(fallDet == 1)
             {
-                fallSpeed = 8;
+                fallSpeed = 9;
+                pointValue += 2;
             }
             else if (fallDet == 2)
             {
                 fallSpeed = 12;
+                pointValue += 4;
             }
             else if (fallDet == 2)
             {
-                fallSpeed = 10;
+                fallSpeed = 11;
+                pointValue += 6;
             }
 
             spriteBox = new Rectangle(xPos, (-(int)hW.Y - rng.Next(0,20)), (int)hW.X, (int)hW.Y);

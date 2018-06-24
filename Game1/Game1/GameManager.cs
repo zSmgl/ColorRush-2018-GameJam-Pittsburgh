@@ -17,15 +17,16 @@ namespace Game1
         private RandomTimer spawner;
         private List<Texture2D> meteorSprites;
         private List<Meteor> meteors;
+        private UserInterface uI;
         private Random rng;
 
         //Controlled Values
         private int scrollSpeed;
 
-        public GameManager(ScrollingBackground scrollingBackground, Player player, Texture2D projectileSprite, List<Texture2D> meteorSprites)
+        public GameManager(ScrollingBackground scrollingBackground, Player player, Texture2D projectileSprite, List<Texture2D> meteorSprites, UserInterface uI)
         {
             this.scrollingBackground = scrollingBackground;
-            scrollSpeed = 160;
+            scrollSpeed = 90;
 
             this.player = player;
             player.ScreenBorder = new Vector2(950, 950);
@@ -33,14 +34,16 @@ namespace Game1
             projectiles = new List<Projectiles>();
             this.projectileSprite = projectileSprite;
             // Test the two last values of this.
-            spawner = new RandomTimer(3000, new Random(), 165, 500);
+            spawner = new RandomTimer(3000, new Random(), 130, 200);
             meteors = new List<Meteor>();
             this.meteorSprites = meteorSprites;
+
+            this.uI = uI;
 
             rng = new Random();
         }
 
-        public void Update(GameTime gameTime)
+        public GameState Update(GameTime gameTime)
         {
             // Remove Old Stuff on Screen if didnt explode
             for (int i = 0; i < projectiles.Count; i++)
@@ -112,6 +115,7 @@ namespace Game1
                         {
                             m.IsActive = false;
                             p.IsActive = false;
+                            player.PlayerScore += (m.PointVaue * player.Multiplier);
                             break;
                         }
                     }
@@ -123,14 +127,33 @@ namespace Game1
                 if (m.Spritebox.Intersects(player.Hitbox) && m.IsActive)
                 {
                     m.IsActive = false;
-                    player.IsDrawn = false;
-                    break;
+                    if (player.IsInvincible)
+                    {
+                        player.PlayerScore += (m.PointVaue * player.Multiplier);
+                    }
+                    else
+                    {
+                        player.Playerstate = PlayerState.die;
+                        break;
+                    }
                 }
+            }
+
+            if (uI.Update(player, gameTime))
+            {
+                return GameState.gameover;
             }
 
 
 
-            scrollingBackground.Update(-1, scrollSpeed, gameTime);
+            scrollingBackground.Update(1, scrollSpeed, gameTime);
+
+            if(player.Playerstate == PlayerState.die)
+            {
+                return GameState.gameover;
+            }
+
+            return GameState.play;
         }
 
         private bool ComplementsCheck(Projectiles p, Meteor m)
@@ -140,11 +163,11 @@ namespace Game1
                 return true;
             }
 
-            if (p.Color == Color.Red && m.Color == Color.Green)
+            if (p.Color == Color.Red && m.Color == Color.LawnGreen)
             {
                 return true;
             }
-            else if(p.Color == Color.Yellow && m.Color == Color.Purple)
+            else if(p.Color == Color.Yellow && m.Color == Color.Fuchsia)
             {
                 return true;
             }
@@ -159,6 +182,7 @@ namespace Game1
         public void Draw(SpriteBatch sb)
         {
             scrollingBackground.Draw(sb);
+            uI.Draw(sb);
             player.Draw(sb);
 
             if (projectiles != null)

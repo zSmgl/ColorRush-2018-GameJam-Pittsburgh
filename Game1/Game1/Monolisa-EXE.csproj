@@ -54,6 +54,7 @@
     <Compile Include="RandomTimer.cs" />
     <Compile Include="ScrollingBackground.cs" />
     <Compile Include="Timer.cs" />
+    <Compile Include="UserInterface.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

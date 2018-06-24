@@ -7,8 +7,17 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+enum GameState
+{
+    menu,
+    play,
+    gameover,
+    scores
+}
+
 namespace Game1
 {
+
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
@@ -30,6 +39,13 @@ namespace Game1
         #region Meteor
         List<Texture2D> meteorSizes;
         #endregion Meteor
+        #region UI
+        private SpriteFont uiFont;
+        private List<Texture2D> primaryColor;
+        private List<Texture2D> complementColor;
+        private List<Texture2D> whiteLine;
+        #endregion UI
+        UserInterface uI;
         GameManager gM;
 
         public Game1()
@@ -74,7 +90,7 @@ namespace Game1
                 baseBackground.Add(new Base_Background(Content.Load<Texture2D>("debug\\bg_" + i + ""), backgroundSize));
             }
 
-            bg = new ScrollingBackground(baseBackground);
+            bg = new ScrollingBackground(baseBackground, Content.Load<Texture2D>("debug\\shader"));
 
             #endregion Background
 
@@ -100,7 +116,27 @@ namespace Game1
 
             #endregion Meteor
 
-            gM = new GameManager(bg, defaultPlayer, Content.Load<Texture2D>("debug\\projectile"), meteorSizes);
+            #region UI
+
+            primaryColor = new List<Texture2D>();
+            for (int i = 0; i < 4; i++)
+            {
+                primaryColor.Add(Content.Load<Texture2D>("ui\\prim_" + i + ""));
+            }
+            complementColor = new List<Texture2D>();
+            for (int i = 0; i < 4; i++)
+            {
+                complementColor.Add(Content.Load<Texture2D>("ui\\comp_" + i + ""));
+            }
+            whiteLine = new List<Texture2D>();
+            whiteLine.Add(Content.Load<Texture2D>("ui\\whiteline1"));
+            whiteLine.Add(Content.Load<Texture2D>("ui\\whiteline2"));
+
+            uI = new UserInterface(Content.Load<SpriteFont>("spriteFont"),
+                primaryColor, complementColor, whiteLine, Content.Load<Texture2D>("ui\\blackBG"));
+            #endregion UI
+
+            gM = new GameManager(bg, defaultPlayer, Content.Load<Texture2D>("debug\\projectile"), meteorSizes, uI);
 
 
 

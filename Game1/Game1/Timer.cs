@@ -26,6 +26,11 @@ namespace Game1
 
         #endregion Fields
 
+        public double TimeLeft
+        {
+            get{ return (standard - timer); }
+        }
+
         #region Constructor
 
         /// <summary>

@@ -12,43 +12,45 @@ namespace Game1
     {
         private List<Base_Background> background;
 
-        public ScrollingBackground(List<Base_Background> background)
+        public ScrollingBackground(List<Base_Background> background, Texture2D shader)
         {
-            background[1].Y = background[0].Y + background[0].Height;
-            background[2].Y = background[1].Y + background[1].Height;
-            background[3].Y = background[2].Y + background[2].Height;
-            background[4].Y = background[3].Y + background[3].Height;
+            background[1].Y = background[0].Y - background[0].Height;
+            background[2].Y = background[1].Y - background[1].Height;
+            background[3].Y = background[2].Y - background[2].Height;
+            background[4].Y = background[3].Y - background[3].Height;
 
             this.background = background;
             isActive = true;
             isDrawn = true;
+            defaultSprite = shader;
+            spriteBox = new Rectangle(0, 0, 950, 950);
         }
 
         public void Update(int aDirection, int aSpeed, GameTime gameTime)
         {
-            if (background[0].Y < -background[0].Height)
+            if (background[0].Y > background[0].Height)
             {
-                background[0].Y = background[4].Y + background[4].Height;
+                background[0].Y = background[4].Y - background[4].Height;
             }
 
-            if (background[1].Y < -background[1].Height)
+            if (background[1].Y > background[1].Height)
             {
-                background[1].Y = background[0].Y + background[0].Height;
+                background[1].Y = background[0].Y - background[0].Height;
             }
 
-            if (background[2].Y < -background[2].Height)
+            if (background[2].Y > background[2].Height)
             {
-                background[2].Y = background[1].Y + background[1].Height;
+                background[2].Y = background[1].Y - background[1].Height;
             }
 
             if (background[3].Y < -background[3].Height)
             {
-                background[3].Y = background[2].Y + background[2].Height;
+                background[3].Y = background[2].Y - background[2].Height;
             }
 
-            if (background[4].Y < -background[4].Height)
+            if (background[4].Y > background[4].Height)
             {
-                background[4].Y = background[3].Y + background[3].Height;
+                background[4].Y = background[3].Y - background[3].Height;
             }
 
             background[0].Y += (int)(aDirection * aSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -64,6 +66,8 @@ namespace Game1
             {
                 b.Draw(sb);
             }
+
+            sb.Draw(defaultSprite, spriteBox, Color.White * 0.5f);
         }
     }
 }
