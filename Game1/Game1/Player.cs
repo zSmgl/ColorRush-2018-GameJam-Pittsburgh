@@ -149,7 +149,7 @@ namespace Game1
             activeColor.Add(Color.White, false);
             activeColor.Add(Color.Red, true);
             activeColor.Add(Color.Blue, true);
-            activeColor.Add(Color.Yellow, false);
+            activeColor.Add(Color.Yellow, true);
             activeColor.Add(Color.Black, false);
 
             RepositionHitbox();
@@ -157,7 +157,7 @@ namespace Game1
             isActive = true;
             isDrawn = true;
             canShoot = true;
-            shootTime = new Timer(300);
+            shootTime = new Timer(360);
 
             //Movement
             bindableKb = new Dictionary<string, Keys>();
@@ -459,13 +459,12 @@ namespace Game1
             return false;
         }
 
-        public void CheckColliderAgainstEnemy(Meteor m)
-        {
-        }
-
         public override void Draw(SpriteBatch sb)
         {
-            sb.Draw(defaultSprite, spriteBox, Color.White);
+            if (isDrawn)
+            {
+                sb.Draw(defaultSprite, spriteBox, Color.White);
+            }
         }
 
     }

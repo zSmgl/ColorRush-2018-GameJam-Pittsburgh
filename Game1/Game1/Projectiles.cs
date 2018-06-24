@@ -14,6 +14,18 @@ namespace Game1
         private Color color;
         private int velocityConstant;
 
+        public Rectangle Hitbox
+        {
+            get { return hitbox; }
+            set { hitbox = value; }
+        }
+
+        public Color Color
+        {
+            get { return color; }
+            set { color = value; }
+        }
+
         public Projectiles(Vector2 spawnCord, Color color)
         {
             hitbox = new Rectangle((int)spawnCord.X, (int)spawnCord.Y, 12, 26);

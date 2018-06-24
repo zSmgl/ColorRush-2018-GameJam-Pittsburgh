@@ -43,25 +43,19 @@ namespace Game1
         public void Update(GameTime gameTime)
         {
             // Remove Old Stuff on Screen if didnt explode
-            if(projectiles!= null)
+            for (int i = 0; i < projectiles.Count; i++)
             {
-                for (int i = projectiles.Count; i < 0; i--)
+                if (projectiles[i].IsActive == false)
                 {
-                    if (projectiles[i].IsActive == false)
-                    {
-                        projectiles.RemoveAt(i);
-                    }
+                    projectiles.RemoveAt(i);
                 }
             }
 
-            if(meteors!= null)
+            for (int i = 0; i < meteors.Count; i++)
             {
-                for (int i = meteors.Count; i < 0; i--)
+                if (meteors[i].IsActive == false)
                 {
-                    if (meteors[i].IsActive == false)
-                    {
-                        meteors.RemoveAt(i);
-                    }
+                    meteors.RemoveAt(i);
                 }
             }
 
@@ -99,26 +93,67 @@ namespace Game1
 
             // Update Projectiles if Any
 
-            if (projectiles != null)
-            {
                 foreach (Projectiles p in projectiles)
                 {
                     p.Update();
                 }
-            }
 
-            // Update Meteors if any
-            if (meteors != null)
-            {
                 foreach (Meteor m in meteors)
                 {
                     m.Update();
+                }
+
+                foreach(Projectiles p in projectiles)
+                {
+                    foreach(Meteor m in meteors)
+                    {
+                        
+                        if (m.Spritebox.Intersects(p.Hitbox) && m.IsActive && ComplementsCheck(p, m))
+                        {
+                            m.IsActive = false;
+                            p.IsActive = false;
+                            break;
+                        }
+                    }
+                }
+
+            foreach (Meteor m in meteors)
+            {
+
+                if (m.Spritebox.Intersects(player.Hitbox) && m.IsActive)
+                {
+                    m.IsActive = false;
+                    player.IsDrawn = false;
+                    break;
                 }
             }
 
 
 
             scrollingBackground.Update(-1, scrollSpeed, gameTime);
+        }
+
+        private bool ComplementsCheck(Projectiles p, Meteor m)
+        {
+            if(p.Color == Color.Black)
+            {
+                return true;
+            }
+
+            if (p.Color == Color.Red && m.Color == Color.Green)
+            {
+                return true;
+            }
+            else if(p.Color == Color.Yellow && m.Color == Color.Purple)
+            {
+                return true;
+            }
+            else if (p.Color == Color.Blue && m.Color == Color.Orange)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public void Draw(SpriteBatch sb)
