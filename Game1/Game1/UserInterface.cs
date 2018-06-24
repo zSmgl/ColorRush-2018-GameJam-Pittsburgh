@@ -105,7 +105,7 @@ namespace Game1
             switch (uiCase)
             {
                 case UICase.Invincible:
-                    sb.DrawString(font, "INVINCIBLE", new Vector2(10 + 950, 345), Color.White);
+                    sb.DrawString(font, "INVINCIBLE", new Vector2(950, 345), Color.White);
                     sb.Draw(whiteLine[0], new Rectangle(40 + 950, 375, 120, 25), Color.White);
                     break;
                 case UICase.Reloading:
@@ -132,14 +132,14 @@ namespace Game1
                     sb.Draw(complementColor[3], new Rectangle(68 + 950, 693, 64, 64), Color.White);
                     break;
                 case ColorCase.Yellow:
-                    sb.Draw(complementColor[3], new Rectangle(68 + 950, 516, 21, 64), Color.Fuchsia);
                     sb.Draw(primaryColor[2], new Rectangle(68 + 950, 516, 64, 64), Color.White);
                     sb.Draw(complementColor[2], new Rectangle(68 + 950, 693, 64, 64), Color.White);
+                    sb.Draw(complementColor[3], new Rectangle(68 + 950, 693, 21, 64), Color.Fuchsia);
                     break;
                 case ColorCase.Blue:
-                    sb.Draw(complementColor[3], new Rectangle(68 + 950, 516, 32, 64), Color.Fuchsia);
                     sb.Draw(primaryColor[1], new Rectangle(68 + 950, 516, 64, 64), Color.White);
                     sb.Draw(complementColor[1], new Rectangle(68 + 950, 693, 64, 64), Color.White);
+                    sb.Draw(complementColor[3], new Rectangle(68 + 950, 693, 32, 64), Color.Fuchsia);
                     break;
                 case ColorCase.Red:
                     sb.Draw(primaryColor[0], new Rectangle(68 + 950, 516, 64, 64), Color.White);

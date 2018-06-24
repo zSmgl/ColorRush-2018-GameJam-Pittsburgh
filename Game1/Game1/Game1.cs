@@ -45,6 +45,9 @@ namespace Game1
         private List<Texture2D> complementColor;
         private List<Texture2D> whiteLine;
         #endregion UI
+        Boolean drawPrevious;
+        GameState previousState;
+        GameState gameState;
         UserInterface uI;
         GameManager gM;
 
@@ -138,6 +141,10 @@ namespace Game1
 
             gM = new GameManager(bg, defaultPlayer, Content.Load<Texture2D>("debug\\projectile"), meteorSizes, uI);
 
+            gameState = GameState.menu;
+
+            
+
 
 
 
@@ -161,7 +168,9 @@ namespace Game1
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+            drawPrevious = false;
 
+            //GameStateMachine(gameTime);
             gM.Update(gameTime);
 
             base.Update(gameTime);
@@ -176,10 +185,71 @@ namespace Game1
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
-            gM.Draw(spriteBatch);
+            if (drawPrevious)
+            {
+                switch(previousState)
+                {
+                    case GameState.menu:
+                        menu.Draw(spriteBatch);
+                        break;
+                    case GameState.play:
+                        gM.Draw(spriteBatch);
+                        break;
+                    case GameState.gameover:
+                        scoreScreen.Draw(spriteBatch);
+                        break;
+                }
+            }
+            else
+            {
+                switch (gameState)
+                {
+                    case GameState.menu:
+                        menu.Draw(spriteBatch);
+                        break;
+                    case GameState.play:
+                        gM.Draw(spriteBatch);
+                        break;
+                    case GameState.gameover:
+                        scoreScreen.Draw(spriteBatch);
+                        break;
+                }
+            }
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private GameState GameStateMachine(GameTime gameTime)
+        {
+            switch (gameState)
+            {
+                case GameState.menu:
+                    if (menu.Update() == GameState.menu)
+                    {
+                        return GameState.menu;
+                    }
+                    gM.Reset();
+                    drawPrevious = true;
+                    return GameState.play;
+
+                case GameState.play:
+                    if( gM.Update(gameTime) == GameState.play)
+                    {
+                        return GameState.play;
+                    }
+                    scoreScreen.AddInfo(gM.GetInfo());
+                    drawPrevious = true;
+                    return GameState.gameover;
+
+                case GameState.gameover:
+                    if (scoreScreen.Update() == GameState.gameover)
+                    {
+                        return GameState.gameover;
+                    }
+                    drawPrevious = true;
+                    return GameState.menu;
+            }
         }
     }
 }
